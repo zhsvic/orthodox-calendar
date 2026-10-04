@@ -40,6 +40,7 @@ jobs:
     # Прямая сборка APK-файла в тихом режиме (без перегрузки логов браузера)
     - name: Build APK with Buildozer
       run: |
+        yes | mandoid || true
         buildozer android debug
 
     # Автоматическая загрузка готового APK в артефакты GitHub (результаты сборки)

@@ -43,18 +43,18 @@ jobs:
           libssl-dev \
           libgmp3-dev \
           zlib1g-dev \
-          openjdk-17-jdk \
           unzip \
           zip \
           tar \
           autoconf \
           automake \
           libtool \
-          pkg-config
+          pkg-config \
+          cmake
         python -m pip install --upgrade pip
         pip install "pip<24.1"
         pip install cython==0.29.33 buildozer
-
+        
     - name: Build APK with Buildozer
       run: |
         # Исправление возможных проблем с правами кэша

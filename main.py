@@ -22,7 +22,7 @@ def get_full_orthodox_calendar(year):
     else:
         day_old, month_old = days_st - 31, 4
 
-    # Автоматический расчет разницы календарей для любого века
+    # Автоматический расчет разницы календарей для любого века (для XX-XXI вв. = 13)
     century = year // 100
     diff = century - century // 4 - 2
     
@@ -67,146 +67,146 @@ def get_full_orthodox_calendar(year):
     subbota_troica = troica - timedelta(days=1)        # Троицкая вселенская
 
     # =========================================================================
-    # 3. ФИКСИРОВАННЫЕ ПРАЗДНИКИ И ПОСТЫ (Всегда в один и тот же день)
+    # 3. ФИКСИРОВАННЫЕ ПРАЗДНИКИ (Всегда в один и тот же день)
     # =========================================================================
     fixed_dates = {
+        "Рождество Христово": datetime(year, 1, 7),
         "Обрезание Господне / Св. Василия Вел.": datetime(year, 1, 14),
-        "Богоявление (Крещение Господне)": datetime(year, 1, 19),
+        "Bогоявление (Крещение Господне)": datetime(year, 1, 19),
         "Сретение Господне": datetime(year, 2, 15),
         "Благовещение Пресвятой Богородицы": datetime(year, 4, 7),
         "Рождество Иоанна Предтечи": datetime(year, 7, 7),
         "Святых апостолов Петра и Павла": datetime(year, 7, 12),
         "Преображение Господне (Яблочный Спас)": datetime(year, 8, 19),
-        "Успение Пресвятой Богородицы": datetime(year, 8, 28),
+        "Успенский пост": "с 14 по 27 августа (14 дней)",
+        "Успенский пост (конец)": datetime(year, 8, 28),
         "Усекновение главы Иоанна Предтечи": datetime(year, 9, 11),
         "Рождество Пресвятой Богородицы": datetime(year, 9, 21),
         "Воздвижение Креста Господня": datetime(year, 9, 27),
         "Покров Пресвятой Богородицы": datetime(year, 10, 14),
         "Введение во храм Пресвятой Богородицы": datetime(year, 12, 4),
-        "Рождество Христово": datetime(year, 12, 25) if year < 1918 else datetime(year, 1, 7) # Коррекция календаря
+        "Рождественский пост": "с 28 ноября по 6 января (40 дней)"
     }
-    
-    # Рождество для текущего века всегда 7 января (светский стиль)
-    fixed_dates["Рождество Христово"] = datetime(year, 1, 7)
-
-    # Фиксированные многодневные посты
-    uspesnkiy_post = f"с 14 августа по 27 августа (14 дней)"
-    rozhdestvenskiy_post = f"с 28 ноября по 6 января (40 дней)"
 
     # =========================================================================
-    # 4. КРАСИВОЕ ФОРМАТИРОВАНИЕ ДАТ ДЛЯ ТЕЛЕФОНА
+    # 4. БЕЗОПАСНОЕ ФОРМАТИРОВАНИЕ БЕЗ ИСПОЛЬЗОВАНИЯ СИСТЕМНОЙ ЛОКАЛИ
     # =========================================================================
     def format_date(dt):
+        if isinstance(dt, str):  # Если это строка с информацией о посте
+            return dt
         months = {1: "января", 2: "февраля", 3: "марта", 4: "апреля", 5: "мая", 
                   6: "июня", 7: "июля", 8: "августа", 9: "сентября", 10: "октября", 11: "ноября", 12: "декабря"}
         days = {0: "Понедельник", 1: "Вторник", 2: "Среда", 3: "Четверг", 4: "Пятница", 5: "Суббота", 6: "Воскресенье"}
         return f"{dt.day} {months[dt.month]} ({days[dt.weekday()]})"
 
-    # Сборка итоговых словарей
-    holidays_block = {
-        "СВЕТЛОЕ ХРИСТОВО ВОСКРЕСЕНИЕ (ПАСХА)": format_date(easter),
-        "Вход Господень в Иерусалим (Вербное)": format_date(verbnoe),
-        "Вознесение Господне": format_date(voznesenie),
-        "День Святой Троицы (Пятидесятница)": format_date(troica),
-        "Лазарева суббота": format_date(lazareva),
-        "Чистый Четверг (Страстная седмица)": format_date(chistiy_chetverg),
-        "Страстная Пятница (Воспоминание распятия)": format_date(strastnaya_pyatnica)
-    }
-    
-    # Добавляем непереходящие праздники
-    for name, date_obj in fixed_dates.items():
-        holidays_block[name] = format_date(date_obj)
+    # Собираем данные в хронологическом порядке по объектам datetime, чтобы избежать сбоев сортировки
+    events_list = [
+        ("Рождество Христово", fixed_dates["Рождество Христово"]),
+        ("Обрезание Господне / Св. Василия Вел.", fixed_dates["Обрезание Господне / Св. Василия Вел."]),
+        ("Богоявление (Крещение Господне)", fixed_dates["Bогоявление (Крещение Господне)"]),
+        ("Масленица (начало)", maslenica_start),
+        ("Сретение Господне", fixed_dates["Сретение Господне"]),
+        ("НАЧАЛО ВЕЛИКОГО ПОСТА", nachalo_posta),
+        ("Благовещение Пресвятой Богородицы", fixed_dates["Благовещение Пресвятой Богородицы"]),
+        ("Лазарева суббота", lazareva),
+        ("Вербное Воскресенье", verbnoe),
+        ("Чистый Четверг", chistiy_chetverg),
+        ("Страстная Пятница", strastnaya_pyatnica),
+        ("ПАСХА ХРИСТОВА", easter),
+        ("Вознесение Господне", voznesenie),
+        ("День Святой Троицы", troica),
+        ("ПЕТРОВ ПОСТ (Апостольский)", petrov_info),
+        ("Рождество Иоанна Предтечи", fixed_dates["Рождество Иоанна Предтечи"]),
+        ("Святых апостолов Петра и Павла", fixed_dates["Святых апостолов Петра и Павла"]),
+        ("УСПЕНСКИЙ ПОСТ", fixed_dates["Успенский post"]),
+        ("Преображение Господне", fixed_dates["Преображение Господне (Яблочный Спас)"]),
+        ("Успение Пресвятой Богородицы", fixed_dates["Успенский пост (конец)"]),
+        ("Усекновение главы Иоанна Предтечи", fixed_dates["Усекновение главы Иоанна Предтечи"]),
+        ("Рождество Пресвятой Богородицы", fixed_dates["Рождество Пресвятой Богородицы"]),
+        ("Воздвижение Креста Господня", fixed_dates["Воздвижение Креста Господня"]),
+        ("Покров Пресвятой Богородицы", fixed_dates["Покров Пресвятой Богородицы"]),
+        ("Введение во храм Богородицы", fixed_dates["Введение во храм Пресвятой Богородицы"]),
+        ("РОЖДЕСТВЕНСКИЙ ПОСТ", fixed_dates["Рождественский пост"])
+    ]
 
-    # Сортируем праздники по хронологическому порядку месяцев и дней
-    sorted_holidays = dict(sorted(holidays_block.items(), key=lambda item: datetime.strptime(item[1].split()[0] + ' ' + item[1].split()[1], "%d %B" if item[1].split()[1].endswith('я') or item[1].split()[1].endswith('а') else "%d %B"))) # Упрощенная сортировка по внутренней дате
-    
-    # Для стабильности работы на мобильных устройствах, сделаем ручную хронологическую сборку главных блоков:
-    main_events = {
-        "Масленица (Сырная седмица, начало)": format_date(maslenica_start),
-        "НАЧАЛО ВЕЛИКОГО ПОСТА": format_date(nachalo_posta),
-        "Благовещение Пресвятой Богородицы": format_date(fixed_dates["Благовещение Пресвятой Богородицы"]),
-        "Лазарева суббота": format_date(lazareva),
-        "Вербное Воскресенье (Вход в Иерусалим)": format_date(verbnoe),
-        "Страстная Пятница": format_date(strastnaya_pyatnica),
-        "ПАСХА ХРИСТОВА": format_date(easter),
-        "Вознесение Господне": format_date(voznesenie),
-        "День Святой Троицы (Пятидесятница)": format_date(troica),
-        "ПЕТРОВ ПОСТ (Апостольский)": petrov_info,
-        "Рождество Иоанна Предтечи": format_date(fixed_dates["Рождество Иоанна Предтечи"]),
-        "Святых апостолов Петра и Павла": format_date(fixed_dates["Святых апостолов Петра и Павла"]),
-        "УСПЕНСКИЙ ПОСТ": uspesnkiy_post,
-        "Преображение Господне (Яблочный Спас)": format_date(fixed_dates["Преображение Господне (Яблочный Спас)"]),
-        "Успение Пресвятой Богородицы": format_date(fixed_dates["Успение Пресвятой Богородицы"]),
-        "Усекновение главы Иоанна Предтечи": format_date(fixed_dates["Усекновение главы Иоанна Предтечи"]),
-        "Рождество Пресвятой Богородицы": format_date(fixed_dates["Рождество Пресвятой Богородицы"]),
-        "Воздвижение Креста Господня": format_date(fixed_dates["Воздвижение Креста Господня"]),
-        "Покров Пресвятой Богородицы": format_date(fixed_dates["Покров Пресвятой Богородицы"]),
-        "Введение во храм Богородицы": format_date(fixed_dates["Введение во храм Пресвятой Богородицы"]),
-        "РОЖДЕСТВЕНСКИЙ ПОСТ (Филиппов)": rozhdestvenskiy_post,
-        "Рождество Христово": format_date(fixed_dates["Рождество Христово"]),
-        "Обрезание Господне / Св. Василия": format_date(fixed_dates["Обрезание Господне / Св. Василия Вел."]),
-        "Богоявление (Крещение Господне)": format_date(fixed_dates["Богоявление (Крещение Господне)"]),
-        "Сретение Господне": format_date(fixed_dates["Сретение Господне"])
-    }
+    # Сортируем список по дате (строки-описания постов ставим условно в конец или обрабатываем)
+    events_list.sort(key=lambda x: x[1] if isinstance(x[1], datetime) else datetime(year, 1, 1))
 
-    memorial_days = {
-        "Вселенская родительская (мясопустная)": format_date(subbota_meat),
-        "Суббота 2-й седмицы Великого поста": format_date(subbota_2),
-        "Суббота 3-й седмицы Великого поста": format_date(subbota_3),
-        "Суббота 4-й седмицы Великого поста": format_date(subbota_4),
-        "Радоница (Поминовение усопших)": format_date(radonica),
-        "Троицкая вселенская родительская суббота": format_date(subbota_troica)
-    }
-    
-    return main_events, memorial_days
+    # Форматируем в текст
+    result_text = f"=== КАЛЕНДАРЬ НА {year} ГОД ===\n\n"
+    for name, date_val in events_list:
+        result_text += f"• {name}:\n  {format_date(date_val)}\n\n"
 
-# --- ГРАФИЧЕСКИЙ ИНТЕРФЕЙС KIVY ---
-class EasterApp(App):
+    result_text += "=== РОДИТЕЛЬСКИЕ СУББОТЫ ===\n\n"
+    result_text += f"• Вселенская мясопустная: {format_date(subbota_meat)}\n"
+    result_text += f"• 2-я седмица поста: {format_date(subbota_2)}\n"
+    result_text += f"• 3-я седмица поста: {format_date(subbota_3)}\n"
+    result_text += f"• 4-я седмица поста: {format_date(subbota_4)}\n"
+    result_text += f"• Радоница: {format_date(radonica)}\n"
+    result_text += f"• Троицкая вселенская: {format_date(subbota_troica)}\n"
+
+    return result_text
+
+# =========================================================================
+# 5. ГРАФИЧЕСКИЙ ИНТЕРФЕЙС KIVY ДЛЯ СБОРКИ НА ANDROID
+# =========================================================================
+class OrthodoxCalendarApp(App):
     def build(self):
-        self.main_layout = BoxLayout(orientation='vertical', padding=15, spacing=12)
+        self.title = "Православный Календарь"
         
-        self.main_layout.add_widget(Label(text="[b]Полный Православный Календарь[/b]", 
-                                          markup=True, size_hint_y=0.06, font_size='18sp', color=(1, 0.82, 0, 1)))
+        # Главный контейнер
+        main_layout = BoxLayout(orientation='vertical', padding=20, spacing=15)
         
-        self.year_input = TextInput(hint_text="Введите год (например, 2027)", 
-                                    multiline=False, input_filter='int', 
-                                    size_hint_y=0.08, font_size='18sp', padding=[10, 10, 10, 10])
-        self.main_layout.add_widget(self.year_input)
+        # Контейнер для ввода года
+        input_layout = BoxLayout(orientation='horizontal', size_hint_y=None, height=100, spacing=10)
         
-        self.btn = Button(text="Построить полный календарь", size_hint_y=0.1, 
-                          font_size='18sp', background_color=(0.12, 0.53, 0.9, 1))
-        self.btn.bind(on_press=self.calculate)
-        self.main_layout.add_widget(self.btn)
+        self.year_input = TextInput(
+            text=str(datetime.now().year),
+            multiline=False,
+            input_filter='int',
+            font_size=32,
+            halign='center',
+            size_hint_x=0.6
+        )
         
-        scroll = ScrollView(size_hint_y=0.76)
-        self.result_label = Label(text="Здесь появится календарь со всеми праздниками года", markup=True,
-                                  size_hint_y=None, halign='left', valign='top', font_size='15sp')
+        calc_button = Button(
+            text="Расчитать",
+            font_size=24,
+            size_hint_x=0.4,
+            background_color=(0.2, 0.6, 0.8, 1)
+        )
+        calc_button.bind(on_press=self.calculate_calendar)
+        
+        input_layout.add_widget(self.year_input)
+        input_layout.add_widget(calc_button)
+        main_layout.add_widget(input_layout)
+        
+        # Область для вывода календаря с прокруткой
+        scroll = ScrollView(size_hint=(1, 1))
+        self.result_label = Label(
+            text="Введите год выше и нажмите кнопку.",
+            font_size=20,
+            size_hint_y=None,
+            halign='left',
+            valign='top'
+        )
         self.result_label.bind(texture_size=self.result_label.setter('size'))
+        
         scroll.add_widget(self.result_label)
-        self.main_layout.add_widget(scroll)
- 
-return self.main_layout
-def calculate(self, instance):
-if not self.year_input.text:
-self.result_label.text = "[color=ff0000]Ошибка: Пожалуйста, введите год![/color]"
-return
-year = int(self.year_input.text)
-if year < 1:
-self.result_label.text = "[color=ff0000]Ошибка: Введите год нашей эры![/color]"
-return
-main_events, memorial_days = get_full_orthodox_calendar(year)
-res = f"[b][size=18sp]ПРАВОСЛАВНЫЙ КАЛЕНДАРЬ НА {year} ГОД[/size][/b]\n\n"
-res += "[color=ffcc00]─── [ ЦЕРКОВНЫЕ ПРАЗДНИКИ И ПОСТЫ ] ────────[/color]\n"
-for k, v in main_events.items():
-if "ПАСХА" in k:
-res += f"🌟 [b][color=ff3333]{k}: {v}[/b][/color]\n"
-elif "ПОСТ" in k:
-res += f"🐟 [color=88ff88]{k}: {v}[/color]\n"
-else:
-res += f"• {k}: {v}\n"
-res += "\n[color=ff6666]─── [ РОДИТЕЛЬСКИЕ СУББОТЫ ] ───────────────[/color]\n"
-for k, v in memorial_days.items():
-res += f"🙏 {k}: {v}\n"
-self.result_label.text = res
-if name == 'main':
-EasterApp().run()
+        main_layout.add_widget(scroll)
+        
+        return main_layout
+
+    def calculate_calendar(self, instance):
+        try:
+            year = int(self.year_input.text)
+            if 1 <= year <= 9999:
+                calendar_data = get_full_orthodox_calendar(year)
+                self.result_label.text = calendar_data
+            else:
+                self.result_label.text = "Ошибка: введите корректный год (1 - 9999)."
+        except ValueError:
+            self.result_label.text = "Пожалуйста, введите числовое значение года."
+
+if __name__ == '__main__':
+    OrthodoxCalendarApp().run()

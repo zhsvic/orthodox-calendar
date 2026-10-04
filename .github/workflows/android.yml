@@ -32,7 +32,7 @@ jobs:
     - name: Install system dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y scons build-essential libgames-support-dev utils libffi-dev ccache autoconf automake libtool
+        sudo apt-get install -y scons build-essential libffi-dev ccache autoconf automake libtool
         pip install --upgrade pip
         pip install "pip<24.1"
         pip install buildozer cython==0.29.33

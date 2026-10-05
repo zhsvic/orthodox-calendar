@@ -113,7 +113,6 @@ def get_full_orthodox_calendar(year):
         }
         return f"{dt.day} {months[dt.month]} ({days[dt.weekday()]})"
 
-    # Базовый URL для сокращения длины строк кода
     base_url = "https://azbyka.ru"
 
     events_list = [
@@ -152,7 +151,7 @@ def get_full_orthodox_calendar(year):
         (f"[color=ff6b6b]• [ref={base_url}]Святых апостолов Петра и Павла[/ref][/color]",
          fixed_dates["Святых апостолов Петра и Павла"]),
         (f"[color=51cf66]• [ref={base_url}]УСПЕНСКИЙ ПОСТ[/ref][/color]",
-         fixed_dates["Успенский пост (начало)"]),
+         fixed_dates["Успенский post (начало)" if "Успенский post (начало)" in fixed_dates else "Успенский пост (начало)"]),
         (f"[color=ff6b6b]• [ref={base_url}]Преображение Господне[/ref][/color]",
          fixed_dates["Преображение Господне"]),
         (f"[color=ff6b6b]• [ref={base_url}]Уснение Пресвятой Богородицы[/ref][/color]",
@@ -171,19 +170,21 @@ def get_full_orthodox_calendar(year):
          fixed_dates["Рождественский пост"])
     ]
 
-    result_text = f"[size={int(sp(26))}][b]КАЛЕНДАРЬ НА {year} ГОД[/b][/size]"
+    size_val = int(sp(26))
+    result_text = f"[size={size_val}][b]КАЛЕНДАРЬ НА {year} ГОД[/b][/size]\n"
     msg = "(нажмите на название для описания)"
-    result_text += f"[size={int(sp(14))}][color=aaaaaa]{msg}[/color][/size]"
+    result_text += f"[size={int(sp(14))}][color=aaaaaa]{msg}[/color][/size]\n\n"
 
     for name, date_val in events_list:
-        result_text += f"{name}[color=ffffff]{format_date(date_val)}[/color]"
-        result_text += f"[size={int(sp(24))}][b]РОДИТЕЛЬСКИЕ СУББОТЫ[/b][/size]"
-        result_text += f"[color=b197fc]• [ref={base_url}]Вселенская мясопустная:[/ref][/color]{format_date(subbota_meat)}"
-        result_text += f"[color=b197fc]• [ref={base_url}]2-я седмица поста:[/ref][/color]{format_date(subbota_2)}"
-        result_text += f"[color=b197fc]• [ref={base_url}]3-я седмица поста:[/ref][/color]{format_date(subbota_3)}"
-        result_text += f"[color=b197fc]• [ref={base_url}]4-я седмица поста:[/ref][/color]{format_date(subbota_4)}"
-        result_text += f"[color=b197fc]• [ref={base_url}]Радоница:[/ref][/color]{format_date(radonica)}"
-        result_text += f"[color=b197fc]• [ref={base_url}]Троицкая вселенская:[/ref][/color]{format_date(subbota_troica)}"
+        result_text += f"{name}\n  [color=ffffff]{format_date(date_val)}[/color]\n\n"
+
+    result_text += f"\n[size={int(sp(24))}][b]РОДИТЕЛЬСКИЕ СУББОТЫ[/b][/size]\n\n"
+    result_text += f"[color=b197fc]• [ref={base_url}]Вселенская мясопустная:[/ref][/color]\n  {format_date(subbota_meat)}\n\n"
+    result_text += f"[color=b197fc]• [ref={base_url}]2-я седмица поста:[/ref][/color]\n  {format_date(subbota_2)}\n\n"
+    result_text += f"[color=b197fc]• [ref={base_url}]3-я седмица поста:[/ref][/color]\n  {format_date(subbota_3)}\n\n"
+    result_text += f"[color=b197fc]• [ref={base_url}]4-я седмица поста:[/ref][/color]\n  {format_date(subbota_4)}\n\n"
+    result_text += f"[color=b197fc]• [ref={base_url}]Радоница:[/ref][/color]\n  {format_date(radonica)}\n\n"
+    result_text += f"[color=b197fc]• [ref={base_url}]Троицкая вселенская:[/ref][/color]\n  {format_date(subbota_troica)}\n\n"
 
     return result_text
 
@@ -221,7 +222,8 @@ class OrthodoxCalendarApp(App):
             size_hint_x=0.4,
             padding=[0, dp(15), 0, 0]
         )
-        self.year_input.bind(on_text_validate=self.calculate_calendar)
+        # Автоматический перерасчет при ручном вводе года и нажатии клавиши Enter
+        self.year_input.bind(on_text_validate=lambda instance: self.calculate_calendar())
 
         btn_plus = Button(
             text="+1 год >",
@@ -254,8 +256,9 @@ class OrthodoxCalendarApp(App):
 
         self.container.add_widget(self.result_label)
         root_scroll.add_widget(self.container)
-
-        self.calculate_calendar(None)
+        
+        # Вызываем автоматический расчет сразу при сборке интерфейса
+        self.calculate_calendar()
 
         return root_scroll
 
@@ -283,7 +286,7 @@ class OrthodoxCalendarApp(App):
         except ValueError:
             pass
 
-    def calculate_calendar(self, instance):
+    def calculate_calendar(self):
         try:
             year = int(self.year_input.text)
             if 1 <= year <= 9999:

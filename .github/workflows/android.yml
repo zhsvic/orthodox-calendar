@@ -1,4 +1,4 @@
-name: Build Android APK with Buildozer
+name: Build Release for Google Play and RuStore
 
 on:
   push:
@@ -24,7 +24,6 @@ jobs:
         distribution: 'temurin'
         java-version: '17'
 
-    # Перенаправляем кэш в домашнюю директорию, как требует Buildozer по умолчанию
     - name: Cache Buildozer global directory
       uses: actions/cache@v5
       with:
@@ -57,15 +56,42 @@ jobs:
         pip install "pip<24.1"
         pip install cython==0.29.33 buildozer
 
-    - name: Build APK with Buildozer
+    # Сервер GitHub сам генерирует рабочий release.keystore
+    - name: Generate Production Keystore
       run: |
-        # Гарантируем наличие папки перед стартом сборки
-        mkdir -p ~/.buildozer
-        buildozer android debug
+        keytool -genkey -v \
+          -keystore release.keystore \
+          -alias orthodox_alias \
+          -keyalg RSA \
+          -keysize 2048 \
+          -validity 10000 \
+          -storepass "OrthodoxPass123" \
+          -keypass "OrthodoxPass123" \
+          -dname "CN=OrthodoxCalendar, OU=App, O=Orthodox, L=Moscow, S=Moscow, C=RU"
 
+    # Собираем подписанный релизный AAB и APK пакеты
+    - name: Build Release with Buildozer
+      env:
+        P4A_RELEASE_KEYSTORE: release.keystore
+        P4A_RELEASE_KEYSTORE_PASSWD: OrthodoxPass123
+        P4A_RELEASE_KEYALIAS: orthodox_alias
+        P4A_RELEASE_KEYALIAS_PASSWD: OrthodoxPass123
+      run: |
+        mkdir -p ~/.buildozer
+        buildozer android release
+
+    # Сохраняем готовый AAB (для Google Play)
+    - name: Upload AAB Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: Orthodox-Calendar-GooglePlay-AAB
+        path: bin/*.aab
+        retention-days: 14
+
+    # Сохраняем готовый APK (для RuStore)
     - name: Upload APK Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: Easter-Calendar-APK
+        name: Orthodox-Calendar-RuStore-APK
         path: bin/*.apk
-        retention-days: 7
+        retention-days: 14

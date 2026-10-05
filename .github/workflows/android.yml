@@ -56,7 +56,7 @@ jobs:
         pip install "pip<24.1"
         pip install cython==0.29.33 buildozer
 
-    # Сервер GitHub сам генерирует рабочий release.keystore
+    # Генерируем релизный ключ подписи
     - name: Generate Production Keystore
       run: |
         keytool -genkey -v \
@@ -69,7 +69,14 @@ jobs:
           -keypass "OrthodoxPass123" \
           -dname "CN=OrthodoxCalendar, OU=App, O=Orthodox, L=Moscow, S=Moscow, C=RU"
 
-    # Собираем подписанный релизный AAB и APK пакеты
+    # Раскладываем ключ по внутренним рабочим папкам Buildozer перед компиляцией
+    - name: Prepare Keystore Paths for Buildozer
+      run: |
+        mkdir -p .buildozer/android/platform/build-arm64-v8a/dists/orthodox_calendar/
+        cp release.keystore .buildozer/android/platform/build-arm64-v8a/dists/orthodox_calendar/
+        cp release.keystore ./
+
+    # Запускаем сборку подписанного релиза
     - name: Build Release with Buildozer
       env:
         P4A_RELEASE_KEYSTORE: release.keystore
@@ -80,7 +87,7 @@ jobs:
         mkdir -p ~/.buildozer
         buildozer android release
 
-    # Сохраняем готовый AAB (для Google Play)
+    # Сохраняем подписанный AAB (для Google Play)
     - name: Upload AAB Artifact
       uses: actions/upload-artifact@v4
       with:
@@ -88,7 +95,7 @@ jobs:
         path: bin/*.aab
         retention-days: 14
 
-    # Сохраняем готовый APK (для RuStore)
+    # Сохраняем подписанный APK (для RuStore)
     - name: Upload APK Artifact
       uses: actions/upload-artifact@v4
       with:

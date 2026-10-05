@@ -3,6 +3,7 @@ from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.button import Button
 from kivy.uix.label import Label
+from kivy.uix.textinput import TextInput
 from kivy.uix.scrollview import ScrollView
 from kivy.metrics import dp, sp
 
@@ -147,8 +148,8 @@ def get_full_orthodox_calendar(year):
         ("[color=ff6b6b]• Святых апостолов Петра и Павла[/color]",
          fixed_dates["Святых апостолов Петра и Павла"]),
         ("[color=51cf66]• УСПЕНСКИЙ ПОСТ[/color]",
-         fixed_dates["Успенский пост (начало)"]),
-        ("[color=ff6b6b]• Preображение Господне[/color]",
+         fixed_dates["Успенский post (начало)" if "Успенский post (начало)" in fixed_dates else "Успенский пост (начало)"]),
+        ("[color=ff6b6b]• Преображение Господне[/color]",
          fixed_dates["Преображение Господне"]),
         ("[color=ff6b6b]• Уснение Пресвятой Богородицы[/color]",
          fixed_dates["Уснение Пресвятой Богородицы"]),
@@ -208,16 +209,17 @@ class OrthodoxCalendarApp(App):
         )
         btn_minus.bind(on_press=self.decrement_year)
 
-        # Заменено на Label для исключения экранной клавиатуры
-        self.year_label = Label(
+        self.year_input = TextInput(
             text=str(self.current_year),
+            multiline=False,
+            input_filter='int',
             font_size=sp(26),
             halign='center',
-            valign='middle',
             size_hint_x=0.4,
-            color=(1, 1, 1, 1)
+            padding=[0, dp(15), 0, 0]
         )
-        self.year_label.bind(size=self.year_label.setter('text_size'))
+        self.year_input.bind(text=self.on_year_text_change)
+        self.year_input.bind(on_text_validate=lambda instance: self.update_calendar_view())
 
         btn_plus = Button(
             text="+1 год >",
@@ -229,7 +231,7 @@ class OrthodoxCalendarApp(App):
         btn_plus.bind(on_press=self.increment_year)
 
         input_layout.add_widget(btn_minus)
-        input_layout.add_widget(self.year_label)
+        input_layout.add_widget(self.year_input)
         input_layout.add_widget(btn_plus)
         self.container.add_widget(input_layout)
 
@@ -249,28 +251,46 @@ class OrthodoxCalendarApp(App):
 
         self.container.add_widget(self.result_label)
         root_scroll.add_widget(self.container)
-
         self.update_calendar_view()
 
         return root_scroll
 
+    def on_year_text_change(self, instance, value):
+        try:
+            if value:
+                year = int(value)
+                if 1 <= year <= 9999:
+                    self.current_year = year
+                    calendar_data = get_full_orthodox_calendar(self.current_year)
+                    self.result_label.text = calendar_data
+                else:
+                    self.result_label.text = "[color=ff6b6b]Введите год от 1 до 9999.[/color]"
+        except ValueError:
+            pass
+
     def decrement_year(self, instance):
         if self.current_year > 1:
             self.current_year -= 1
-            self.year_label.text = str(self.current_year)
+            self.year_input.unbind(text=self.on_year_text_change)
+            self.year_input.text = str(self.current_year)
+            self.year_input.bind(text=self.on_year_text_change)
             self.update_calendar_view()
 
     def increment_year(self, instance):
         if self.current_year < 9999:
             self.current_year += 1
-            self.year_label.text = str(self.current_year)
-        self.update_calendar_view()
+            self.year_input.unbind(text=self.on_year_text_change)
+            self.year_input.text = str(self.current_year)
+            self.year_input.bind(text=self.on_year_text_change)
+            self.update_calendar_view()
+
     def update_calendar_view(self):
         try:
             calendar_data = get_full_orthodox_calendar(self.current_year)
             self.result_label.text = calendar_data
         except Exception as e:
             self.result_label.text = f"[color=ff6b6b]Ошибка расчета:\n{str(e)}[/color]"
-            
+
+
 if __name__ == '__main__':
     OrthodoxCalendarApp().run()

@@ -19,7 +19,7 @@ source.include_exts = py,png,jpg,kv,atlas
 version = 1.0
 
 # (list) Зависимости приложения (УДАЛЕН встроенный datetime)
-requirements = python3, kivy, sqlite3, requests, urllib3, certifi, idna, charset-normalizer
+requirements = python3==3.11.9,hostpython3==3.11.9,kivy,cython==0.29.33,sqlite3,requests,urllib3,certifi,idna,charset-normalizer
 
 # (str) Экран загрузки (presplash) приложения
 presplash.filename = %(source.dir)s/nino.png

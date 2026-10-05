@@ -49,6 +49,9 @@ android.minapi = 24
 # (str) Версия Android NDK (25b рекомендована для стабильной сборки)
 android.ndk = 25b
 
+# Добавлено Найдите строку с архитектурами (если её нет, добавьте в секцию [app])
+android.archs = arm64-v8a
+
 # (bool) Автоматически принимать лицензии SDK при сборке в GitHub Actions
 android.accept_sdk_license = True
 
@@ -65,6 +68,6 @@ log_level = 2
 # (int) Предупреждать о сборке от имени root (в GitHub Actions это нормально)
 warn_on_root = 1
 
-[buildozer]
+#[buildozer]
 # (str) Путь к глобальной директории buildozer
-buildozer_dir = ./.buildozer
+#buildozer_dir = ./.buildozer

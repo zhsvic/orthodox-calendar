@@ -5,6 +5,7 @@ from kivy.uix.textinput import TextInput
 from kivy.uix.button import Button
 from kivy.uix.label import Label
 from kivy.uix.scrollview import ScrollView
+from kivy.metrics import dp, sp
 
 def get_full_orthodox_calendar(year):
     # 1. МАТЕМАТИЧЕСКИЙ РАСЧЕТ ПАСХИ (Алгоритм Гаусса)
@@ -66,10 +67,10 @@ def get_full_orthodox_calendar(year):
         "Сретение Господне": datetime(year, 2, 15),
         "Благовещение Пресвятой Богородицы": datetime(year, 4, 7),
         "Рождество Иоанна Предтечи": datetime(year, 7, 7),
-        "Святых апостолов Петра и Павла": datetime(year, 7, 12),
+        "Святых apostles Петра и Павла": datetime(year, 7, 12),
         "Преображение Господне": datetime(year, 8, 19),
         "Успенский пост (начало)": "с 14 по 27 августа (14 дней)",
-        "Успение Пресвятой Богородицы": datetime(year, 8, 28),
+        "Уснение Пресвятой Богородицы": datetime(year, 8, 28),
         "Усекновение главы Иоанна Предтечи": datetime(year, 9, 11),
         "Рождество Пресвятой Богородицы": datetime(year, 9, 21),
         "Воздвижение Креста Господня": datetime(year, 9, 27),
@@ -78,7 +79,7 @@ def get_full_orthodox_calendar(year):
         "Рождественский пост": "с 28 ноября по 6 января (40 дней)"
     }
 
-    # 4. БЕЗОПАСНОЕ ФОРМАТИРОВАНИЕ
+    # 4. БЕЗОПАСНОЕ ФОРМАТИРОВАНИЕ ДАТЫ
     def format_date(dt):
         if isinstance(dt, str):
             return dt
@@ -87,47 +88,48 @@ def get_full_orthodox_calendar(year):
         days = {0: "Понедельник", 1: "Вторник", 2: "Среда", 3: "Четверг", 4: "Пятница", 5: "Суббота", 6: "Воскресенье"}
         return f"{dt.day} {months[dt.month]} ({days[dt.weekday()]})"
 
-    # Хронологический список (строго зафиксирован, чтобы избежать ошибок сортировки)
+    # Хронологический список с цветовой разметкой BBCode:
+    # [color=HEX]Текст[/color]
     events_list = [
-        ("Рождество Христово", fixed_dates["Рождество Христово"]),
-        ("Обрезание Господне / Св. Василия Вел.", fixed_dates["Обрезание Господне / Св. Василия Вел."]),
-        ("Богоявление (Крещение Господне)", fixed_dates["Богоявление (Крещение Господне)"]),
-        ("Масленица (начало)", maslenica_start),
-        ("Сретение Господне", fixed_dates["Сретение Господне"]),
-        ("НАЧАЛО ВЕЛИКОГО ПОСТА", nachalo_posta),
-        ("Благовещение Пресвятой Богородицы", fixed_dates["Благовещение Пресвятой Богородицы"]),
-        ("Лазарева суббота", lazareva),
-        ("Вербное Воскресенье", verbnoe),
-        ("Чистый Четверг", chistiy_chetverg),
-        ("Страстная Пятница", strastnaya_pyatnica),
-        ("ПАСХА ХРИСТОВА", easter),
-        ("Вознесение Господне", voznesenie),
-        ("День Святой Троицы", troica),
-        ("ПЕТРОВ ПОСТ (Апостольский)", petrov_info),
-        ("Рождество Иоанна Предтечи", fixed_dates["Рождество Иоанна Предтечи"]),
-        ("Святых апостолов Петра и Павла", fixed_dates["Святых апостолов Петра и Павла"]),
-        ("УСПЕНСКИЙ ПОСТ", fixed_dates["Успенский пост (начало)"]),
-        ("Преображение Господне", fixed_dates["Преображение Господне"]),
-        ("Успение Пресвятой Богородицы", fixed_dates["Успение Пресвятой Богородицы"]),
-        ("Усекновение главы Иоанна Предтечи", fixed_dates["Усекновение главы Иоанна Предтечи"]),
-        ("Рождество Пресвятой Богородицы", fixed_dates["Рождество Пресвятой Богородицы"]),
-        ("Воздвижение Креста Господня", fixed_dates["Воздвижение Креста Господня"]),
-        ("Покров Пресвятой Богородицы", fixed_dates["Покров Пресвятой Богородицы"]),
-        ("Введение во храм Богородицы", fixed_dates["Введение во храм Пресвятой Богородицы"]),
-        ("РОЖДЕСТВЕНСКИЙ ПОСТ", fixed_dates["Рождественскийポスト" if "Рождественскийポスト" in fixed_dates else "Рождественский пост"])
+        ("[color=ff6b6b]• Рождество Христово[/color]", fixed_dates["Рождество Христово"]),
+        ("[color=ff6b6b]• Обрезание Господне / Св. Василия Вел.[/color]", fixed_dates["Обрезание Господне / Св. Василия Вел."]),
+        ("[color=ff6b6b]• Богоявление (Крещение Господне)[/color]", fixed_dates["Богоявление (Крещение Господне)"]),
+        ("[color=4dabf7]• Масленица (начало)[/color]", maslenica_start),
+        ("[color=ff6b6b]• Сретение Господне[/color]", fixed_dates["Сретение Господне"]),
+        ("[color=51cf66]• НАЧАЛО ВЕЛИКОГО ПОСТА[/color]", nachalo_posta),
+        ("[color=ff6b6b]• Благовещение Пресвятой Богородицы[/color]", fixed_dates["Благовещение Пресвятой Богородицы"]),
+        ("[color=4dabf7]• Лазарева суббота[/color]", lazareva),
+        ("[color=4dabf7]• Вербное Воскресенье[/color]", verbnoe),
+        ("[color=4dabf7]• Чистый Четверг[/color]", chistiy_chetverg),
+        ("[color=4dabf7]• Страстная Пятница[/color]", strastnaya_pyatnica),
+        ("[color=ffd700][b]•• ПАСХА ХРИСТОВА ••[/b][/color]", easter),
+        ("[color=4dabf7]• Вознесение Господне[/color]", voznesenie),
+        ("[color=4dabf7]• День Святой Троицы[/color]", troica),
+        ("[color=51cf66]• ПЕТРОВ ПОСТ (Апостольский)[/color]", petrov_info),
+        ("[color=ff6b6b]• Рождество Иоанна Предтечи[/color]", fixed_dates["Рождество Иоанна Предтечи"]),
+        ("[color=ff6b6b]• Святых апостолов Петра и Павла[/color]", fixed_dates["Святых apostles Петра и Павла"]),
+        ("[color=51cf66]• УСПЕНСКИЙ ПОСТ[/color]", fixed_dates["Успенский пост (начало)"]),
+        ("[color=ff6b6b]• Преображение Господне[/color]", fixed_dates["Преображение Господне"]),
+        ("[color=ff6b6b]• Уснение Пресвятой Богородицы[/color]", fixed_dates["Уснение Пресвятой Богородицы"]),
+        ("[color=ff6b6b]• Усекновение главы Иоанна Предтечи[/color]", fixed_dates["Усекновение главы Иоанна Предтечи"]),
+        ("[color=ff6b6b]• Рождество Пресвятой Богородицы[/color]", fixed_dates["Рождество Пресвятой Богородицы"]),
+        ("[color=ff6b6b]• Воздвижение Креста Господня[/color]", fixed_dates["Воздвижение Креста Господня"]),
+        ("[color=ff6b6b]• Покров Пресвятой Богородицы[/color]", fixed_dates["Покров Пресвятой Богородицы"]),
+        ("[color=ff6b6b]• Введение во храм Богородицы[/color]", fixed_dates["Введение во храм Пресвятой Богородицы"]),
+        ("[color=51cf66]• РОЖДЕСТВЕНСКИЙ ПОСТ[/color]", fixed_dates["Рождественский пост"])
     ]
 
-    result_text = f"=== КАЛЕНДАРЬ НА {year} ГОД ===\n\n"
+    result_text = f"[size={int(sp(26))}][b]КАЛЕНДАРЬ НА {year} ГОД[/b][/size]\n\n"
     for name, date_val in events_list:
-        result_text += f"• {name}:\n  {format_date(date_val)}\n\n"
+        result_text += f"{name}\n  [color=ffffff]{format_date(date_val)}[/color]\n\n"
 
-    result_text += "=== РОДИТЕЛЬСКИЕ СУББОТЫ ===\n\n"
-    result_text += f"• Вселенская мясопустная: {format_date(subbota_meat)}\n"
-    result_text += f"• 2-я седмица поста: {format_date(subbota_2)}\n"
-    result_text += f"• 3-я седмица поста: {format_date(subbota_3)}\n"
-    result_text += f"• 4-я седмица поста: {format_date(subbota_4)}\n"
-    result_text += f"• Радоница: {format_date(radonica)}\n"
-    result_text += f"• Троицкая вселенская: {format_date(subbota_troica)}\n"
+    result_text += f"\n[size={int(sp(24))}][b]РОДИТЕЛЬСКИЕ СУББОТЫ[/b][/size]\n\n"
+    result_text += f"[color=b197fc]• Вселенская мясопустная:[/color]\n  {format_date(subbota_meat)}\n\n"
+    result_text += f"[color=b197fc]• 2-я седмица поста:[/color]\n  {format_date(subbota_2)}\n\n"
+    result_text += f"[color=b197fc]• 3-я седмица поста:[/color]\n  {format_date(subbota_3)}\n\n"
+    result_text += f"[color=b197fc]• 4-я седмица поста:[/color]\n  {format_date(subbota_4)}\n\n"
+    result_text += f"[color=b197fc]• Радоница:[/color]\n  {format_date(radonica)}\n\n"
+    result_text += f"[color=b197fc]• Троицкая вселенская:[/color]\n  {format_date(subbota_troica)}\n\n"
 
     return result_text
 
@@ -136,45 +138,57 @@ class OrthodoxCalendarApp(App):
     def build(self):
         self.title = "Православный Календарь"
         
-        main_layout = BoxLayout(orientation='vertical', padding=20, spacing=15)
-        input_layout = BoxLayout(orientation='horizontal', size_hint_y=None, height=120, spacing=10)
+        # Общий ScrollView на весь экран приложения
+        root_scroll = ScrollView(size_hint=(1, 1), do_scroll_x=False)
+        
+        # Главный контейнер внутри скролла (он будет расти вниз по мере добавления текста)
+        self.container = BoxLayout(orientation='vertical', padding=dp(20), spacing=dp(20), size_hint_y=None)
+        self.container.bind(minimum_height=self.container.setter('height'))
+        
+        # Контейнер для верхнего меню ввода (крупный и адаптивный)
+        input_layout = BoxLayout(orientation='horizontal', size_hint_y=None, height=dp(70), spacing=dp(15))
         
         self.year_input = TextInput(
             text=str(datetime.now().year),
             multiline=False,
             input_filter='int',
-            font_size=28,
+            font_size=sp(26),
             halign='center',
-            size_hint_x=0.5
+            size_hint_x=0.4,
+            padding=[0, dp(15), 0, 0] # Центрирование текста по вертикали в поле ввода
         )
         
         calc_button = Button(
             text="Рассчитать",
-            font_size=22,
-            size_hint_x=0.5,
-            background_color=(0.2, 0.6, 0.8, 1)
+            font_size=sp(22),
+            size_hint_x=0.6,
+            background_color=(0.12, 0.45, 0.74, 1),
+            background_normal='' # Убирает дефолтный серый градиент Kivy для чистого цвета
         )
         calc_button.bind(on_press=self.calculate_calendar)
         
         input_layout.add_widget(self.year_input)
         input_layout.add_widget(calc_button)
-        main_layout.add_widget(input_layout)
+        self.container.add_widget(input_layout)
         
-        scroll = ScrollView(size_hint=(1, 1))
+        # Крупный текстовый блок вывода, выровненный строго по левому краю
         self.result_label = Label(
             text="Введите год выше и нажмите кнопку.",
-            font_size=18,
+            font_size=sp(21),
             size_hint_y=None,
             halign='left',
             valign='top',
+            markup=True, # ВКЛЮЧАЕТ поддержку цветов BBCode
             color=(1, 1, 1, 1)
         )
+        # Автоматическое расширение высоты лейбла в зависимости от текста
         self.result_label.bind(texture_size=self.result_label.setter('size'))
+        self.result_label.bind(width=lambda instance, value: setattr(instance, 'text_size', (value, None)))
         
-        scroll.add_widget(self.result_label)
-        main_layout.add_widget(scroll)
+        self.container.add_widget(self.result_label)
+        root_scroll.add_widget(self.container)
         
-        return main_layout
+        return root_scroll
 
     def calculate_calendar(self, instance):
         try:
@@ -183,10 +197,9 @@ class OrthodoxCalendarApp(App):
                 calendar_data = get_full_orthodox_calendar(year)
                 self.result_label.text = calendar_data
             else:
-                self.result_label.text = "Ошибка: введите год от 1 до 9999."
+                self.result_label.text = "[color=ff6b6b]Ошибка: введите год от 1 до 9999.[/color]"
         except Exception as e:
-            # Безопасный перехват любых ошибок, чтобы приложение не падало
-            self.result_label.text = f"Произошла ошибка при расчете:\n{str(e)}"
+            self.result_label.text = f"[color=ff6b6b]Произведена ошибка при расчете:\n{str(e)}[/color]"
 
 if __name__ == '__main__':
     OrthodoxCalendarApp().run()

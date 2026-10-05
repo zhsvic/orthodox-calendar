@@ -24,10 +24,11 @@ jobs:
         distribution: 'temurin'
         java-version: '17'
 
+    # Перенаправляем кэш в домашнюю директорию, как требует Buildozer по умолчанию
     - name: Cache Buildozer global directory
       uses: actions/cache@v5
       with:
-        path: .buildozer
+        path: ~/.buildozer
         key: ${{ runner.os }}-buildozer-${{ hashFiles('buildozer.spec') }}
         restore-keys: |
           ${{ runner.os }}-buildozer-
@@ -50,14 +51,16 @@ jobs:
           automake \
           libtool \
           pkg-config \
-          cmake
+          cmake \
+          patch
         python -m pip install --upgrade pip
         pip install "pip<24.1"
         pip install cython==0.29.33 buildozer
 
     - name: Build APK with Buildozer
       run: |
-        mkdir -p .buildozer
+        # Гарантируем наличие папки перед стартом сборки
+        mkdir -p ~/.buildozer
         buildozer android debug
 
     - name: Upload APK Artifact

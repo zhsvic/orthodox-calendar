@@ -67,7 +67,7 @@ def get_full_orthodox_calendar(year):
         "Сретение Господне": datetime(year, 2, 15),
         "Благовещение Пресвятой Богородицы": datetime(year, 4, 7),
         "Рождество Иоанна Предтечи": datetime(year, 7, 7),
-        "Святых apostles Петра и Павла": datetime(year, 7, 12),
+        "Святых апостолов Петра и Павла": datetime(year, 7, 12),
         "Преображение Господне": datetime(year, 8, 19),
         "Успенский пост (начало)": "с 14 по 27 августа (14 дней)",
         "Уснение Пресвятой Богородицы": datetime(year, 8, 28),
@@ -88,8 +88,6 @@ def get_full_orthodox_calendar(year):
         days = {0: "Понедельник", 1: "Вторник", 2: "Среда", 3: "Четверг", 4: "Пятница", 5: "Суббота", 6: "Воскресенье"}
         return f"{dt.day} {months[dt.month]} ({days[dt.weekday()]})"
 
-    # Хронологический список с цветовой разметкой BBCode:
-    # [color=HEX]Текст[/color]
     events_list = [
         ("[color=ff6b6b]• Рождество Христово[/color]", fixed_dates["Рождество Христово"]),
         ("[color=ff6b6b]• Обрезание Господне / Св. Василия Вел.[/color]", fixed_dates["Обрезание Господне / Св. Василия Вел."]),
@@ -107,7 +105,7 @@ def get_full_orthodox_calendar(year):
         ("[color=4dabf7]• День Святой Троицы[/color]", troica),
         ("[color=51cf66]• ПЕТРОВ ПОСТ (Апостольский)[/color]", petrov_info),
         ("[color=ff6b6b]• Рождество Иоанна Предтечи[/color]", fixed_dates["Рождество Иоанна Предтечи"]),
-        ("[color=ff6b6b]• Святых апостолов Петра и Павла[/color]", fixed_dates["Святых apostles Петра и Павла"]),
+        ("[color=ff6b6b]• Святых апостолов Петра и Павла[/color]", fixed_dates["Святых апостолов Петра и Павла"]),
         ("[color=51cf66]• УСПЕНСКИЙ ПОСТ[/color]", fixed_dates["Успенский пост (начало)"]),
         ("[color=ff6b6b]• Преображение Господне[/color]", fixed_dates["Преображение Господне"]),
         ("[color=ff6b6b]• Уснение Пресвятой Богородицы[/color]", fixed_dates["Уснение Пресвятой Богородицы"]),
@@ -138,16 +136,25 @@ class OrthodoxCalendarApp(App):
     def build(self):
         self.title = "Православный Календарь"
         
-        # Общий ScrollView на весь экран приложения
         root_scroll = ScrollView(size_hint=(1, 1), do_scroll_x=False)
         
-        # Главный контейнер внутри скролла (он будет расти вниз по мере добавления текста)
         self.container = BoxLayout(orientation='vertical', padding=dp(20), spacing=dp(20), size_hint_y=None)
         self.container.bind(minimum_height=self.container.setter('height'))
         
-        # Контейнер для верхнего меню ввода (крупный и адаптивный)
-        input_layout = BoxLayout(orientation='horizontal', size_hint_y=None, height=dp(70), spacing=dp(15))
+        # Обновленный адаптивный блок управления годами (три элемента в ряд)
+        input_layout = BoxLayout(orientation='horizontal', size_hint_y=None, height=dp(70), spacing=dp(10))
         
+        # Кнопка уменьшения года
+        btn_minus = Button(
+            text="< -1 год",
+            font_size=sp(18),
+            size_hint_x=0.3,
+            background_color=(0.2, 0.25, 0.3, 1),
+            background_normal=''
+        )
+        btn_minus.bind(on_press=self.decrement_year)
+        
+        # Поле отображения и ручного ввода года
         self.year_input = TextInput(
             text=str(datetime.now().year),
             multiline=False,
@@ -155,51 +162,73 @@ class OrthodoxCalendarApp(App):
             font_size=sp(26),
             halign='center',
             size_hint_x=0.4,
-            padding=[0, dp(15), 0, 0] # Центрирование текста по вертикали в поле ввода
+            padding=[0, dp(15), 0, 0]
         )
+        # Автоматический перерасчет при ручном изменении текста и нажатии Enter на клавиатуре
+        self.year_input.bind(on_text_validate=self.calculate_calendar)
         
-        calc_button = Button(
-            text="Рассчитать",
-            font_size=sp(22),
-            size_hint_x=0.6,
-            background_color=(0.12, 0.45, 0.74, 1),
-            background_normal='' # Убирает дефолтный серый градиент Kivy для чистого цвета
+        # Кнопка увеличения года
+        btn_plus = Button(
+            text="+1 год >",
+            font_size=sp(18),
+            size_hint_x=0.3,
+            background_color=(0.2, 0.25, 0.3, 1),
+            background_normal=''
         )
-        calc_button.bind(on_press=self.calculate_calendar)
+        btn_plus.bind(on_press=self.increment_year)
         
+        input_layout.add_widget(btn_minus)
         input_layout.add_widget(self.year_input)
-        input_layout.add_widget(calc_button)
+        input_layout.add_widget(btn_plus)
         self.container.add_widget(input_layout)
         
-        # Крупный текстовый блок вывода, выровненный строго по левому краю
+        # Крупный текстовый блок вывода
         self.result_label = Label(
-            text="Введите год выше и нажмите кнопку.",
+            text="",
             font_size=sp(21),
             size_hint_y=None,
             halign='left',
             valign='top',
-            markup=True, # ВКЛЮЧАЕТ поддержку цветов BBCode
+            markup=True,
             color=(1, 1, 1, 1)
         )
-        # Автоматическое расширение высоты лейбла в зависимости от текста
         self.result_label.bind(texture_size=self.result_label.setter('size'))
         self.result_label.bind(width=lambda instance, value: setattr(instance, 'text_size', (value, None)))
         
         self.container.add_widget(self.result_label)
         root_scroll.add_widget(self.container)
         
+        # Автоматически рассчитываем календарь на текущий год при самом первом запуске приложения
+        self.calculate_calendar(None)
+        
         return root_scroll
 
-    def calculate_calendar(self, instance):
+    def decrement_year(self, instance):
         try:
-            year = int(self.year_input.text)
-            if 1 <= year <= 9999:
-                calendar_data = get_full_orthodox_calendar(year)
-                self.result_label.text = calendar_data
-            else:
-                self.result_label.text = "[color=ff6b6b]Ошибка: введите год от 1 до 9999.[/color]"
-        except Exception as e:
-            self.result_label.text = f"[color=ff6b6b]Произведена ошибка при расчете:\n{str(e)}[/color]"
+            current_year = int(self.year_input.text)
+            if current_year > 1:
+                self.year_input.text = str(current_year - 1)
+                self.calculate_calendar(None)
+        except ValueError:
+            pass
 
-if __name__ == '__main__':
-    OrthodoxCalendarApp().run()
+    def increment_year(self, instance):
+        try:
+            current_year = int(self.year_input.text)
+            if current_year < 9999:
+self.year_input.text = str(current_year + 1)
+self.calculate_calendar(None)
+except ValueError:
+pass
+def calculate_calendar(self, instance):
+try:
+year = int(self.year_input.text)
+if 1 <= year <= 9999:
+calendar_data = get_full_orthodox_calendar(year)
+self.result_label.text = calendar_data
+else:
+self.result_label.text = "[color=ff6b6b]Ошибка: введите год от 1 до 9999.[/color]"
+except Exception as e:
+self.result_label.text = f"[color=ff6b6b]Произошла ошибка при расчете:\n{str(e)}[/color]"
+if name == 'main':
+OrthodoxCalendarApp().run()

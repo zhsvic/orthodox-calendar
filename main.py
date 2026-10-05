@@ -1,8 +1,6 @@
-import webbrowser
 from datetime import datetime, timedelta
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.textinput import TextInput
 from kivy.uix.button import Button
 from kivy.uix.label import Label
 from kivy.uix.scrollview import ScrollView
@@ -113,78 +111,74 @@ def get_full_orthodox_calendar(year):
         }
         return f"{dt.day} {months[dt.month]} ({days[dt.weekday()]})"
 
-    base_url = "https://azbyka.ru"
-
     events_list = [
-        (f"[color=ff6b6b]• [ref={base_url}]Рождество Христово[/ref][/color]",
+        ("[color=ff6b6b]• Рождество Христово[/color]",
          fixed_dates["Рождество Христово"]),
-        (f"[color=ff6b6b]• [ref={base_url}]Обрезание Господне[/ref][/color]",
+        ("[color=ff6b6b]• Обрезание Господне / Св. Василия Вел.[/color]",
          fixed_dates["Обрезание Господне / Св. Василия Вел."]),
-        (f"[color=ff6b6b]• [ref={base_url}]Богоявление (Крещение)[/ref][/color]",
+        ("[color=ff6b6b]• Богоявление (Крещение)[/color]",
          fixed_dates["Богоявление (Крещение Господне)"]),
-        (f"[color=4dabf7]• [ref={base_url}]Масленица (начало)[/ref][/color]",
+        ("[color=4dabf7]• Масленица (начало)[/color]",
          maslenica_start),
-        (f"[color=ff6b6b]• [ref={base_url}]Сретение Господне[/ref][/color]",
+        ("[color=ff6b6b]• Сретение Господне[/color]",
          fixed_dates["Сретение Господне"]),
-        (f"[color=51cf66]• [ref={base_url}]НАЧАЛО ВЕЛИКОГО ПОСТА[/ref][/color]",
+        ("[color=51cf66]• НАЧАЛО ВЕЛИКОГО ПОСТА[/color]",
          nachalo_posta),
-        (f"[color=ff6b6b]• [ref={base_url}]Благовещение Богородицы[/ref][/color]",
+        ("[color=ff6b6b]• Благовещение Богородицы[/color]",
          fixed_dates["Благовещение Пресвятой Богородицы"]),
-        (f"[color=4dabf7]• [ref={base_url}]Лазарева суббота[/ref][/color]",
+        ("[color=4dabf7]• Лазарева суббота[/color]",
          lazareva),
-        (f"[color=4dabf7]• [ref={base_url}]Вербное Воскресенье[/ref][/color]",
+        ("[color=4dabf7]• Вербное Воскресенье[/color]",
          verbnoe),
-        (f"[color=4dabf7]• [ref={base_url}]Чистый Четверг[/ref][/color]",
+        ("[color=4dabf7]• Чистый Четверг[/color]",
          chistiy_chetverg),
-        (f"[color=4dabf7]• [ref={base_url}]Страстная Пятница[/ref][/color]",
+        ("[color=4dabf7]• Страстная Пятница[/color]",
          strastnaya_pyatnica),
-        (f"[color=ffd700][b]•• [ref={base_url}]ПАСХА ХРИСТОВА[/ref] ••[/b][/color]",
+        ("[color=ffd700][b]•• ПАСХА ХРИСТОВА ••[/b][/color]",
          easter),
-        (f"[color=4dabf7]• [ref={base_url}]Вознесение Господне[/ref][/color]",
+        ("[color=4dabf7]• Вознесение Господне[/color]",
          voznesenie),
-        (f"[color=4dabf7]• [ref={base_url}]День Святой Троицы[/ref][/color]",
+        ("[color=4dabf7]• День Святой Троицы[/color]",
          troica),
-        (f"[color=51cf66]• [ref={base_url}]ПЕТРОВ ПОСТ[/ref][/color]",
+        ("[color=51cf66]• ПЕТРОВ ПОСТ[/color]",
          petrov_info),
-        (f"[color=ff6b6b]• [ref={base_url}]Рождество Иоанна Предтечи[/ref][/color]",
+        ("[color=ff6b6b]• Рождество Иоанна Предтечи[/color]",
          fixed_dates["Рождество Иоанна Предтечи"]),
-        (f"[color=ff6b6b]• [ref={base_url}]Святых апостолов Петра и Павла[/ref][/color]",
+        ("[color=ff6b6b]• Святых апостолов Петра и Павла[/color]",
          fixed_dates["Святых апостолов Петра и Павла"]),
-        (f"[color=51cf66]• [ref={base_url}]УСПЕНСКИЙ ПОСТ[/ref][/color]",
-         fixed_dates["Успенский post (начало)" if "Успенский post (начало)" in fixed_dates else "Успенский пост (начало)"]),
-        (f"[color=ff6b6b]• [ref={base_url}]Преображение Господне[/ref][/color]",
+        ("[color=51cf66]• УСПЕНСКИЙ ПОСТ[/color]",
+         fixed_dates["Успенский пост (начало)"]),
+        ("[color=ff6b6b]• Preображение Господне[/color]",
          fixed_dates["Преображение Господне"]),
-        (f"[color=ff6b6b]• [ref={base_url}]Уснение Пресвятой Богородицы[/ref][/color]",
+        ("[color=ff6b6b]• Уснение Пресвятой Богородицы[/color]",
          fixed_dates["Уснение Пресвятой Богородицы"]),
-        (f"[color=ff6b6b]• [ref={base_url}]Усекновение главы Иоанна Предтечи[/ref][/color]",
+        ("[color=ff6b6b]• Усекновение главы Иоанна Предтечи[/color]",
          fixed_dates["Усекновение главы Иоанна Предтечи"]),
-        (f"[color=ff6b6b]• [ref={base_url}]Рождество Богородицы[/ref][/color]",
+        ("[color=ff6b6b]• Рождество Богородицы[/color]",
          fixed_dates["Рождество Пресвятой Богородицы"]),
-        (f"[color=ff6b6b]• [ref={base_url}]Воздвижение Креста Господня[/ref][/color]",
+        ("[color=ff6b6b]• Воздвижение Креста Господня[/color]",
          fixed_dates["Воздвижение Креста Господня"]),
-        (f"[color=ff6b6b]• [ref={base_url}]Покров Пресвятой Богородицы[/ref][/color]",
+        ("[color=ff6b6b]• Покров Пресвятой Богородицы[/color]",
          fixed_dates["Покров Пресвятой Богородицы"]),
-        (f"[color=ff6b6b]• [ref={base_url}]Введение во храм Богородицы[/ref][/color]",
+        ("[color=ff6b6b]• Введение во храм Богородицы[/color]",
          fixed_dates["Введение во храм Пресвятой Богородицы"]),
-        (f"[color=51cf66]• [ref={base_url}]РОЖДЕСТВЕНСКИЙ ПОСТ[/ref][/color]",
+        ("[color=51cf66]• РОЖДЕСТВЕНСКИЙ ПОСТ[/color]",
          fixed_dates["Рождественский пост"])
     ]
 
     size_val = int(sp(26))
-    result_text = f"[size={size_val}][b]КАЛЕНДАРЬ НА {year} ГОД[/b][/size]\n"
-    msg = "(нажмите на название для описания)"
-    result_text += f"[size={int(sp(14))}][color=aaaaaa]{msg}[/color][/size]\n\n"
+    result_text = f"[size={size_val}][b]КАЛЕНДАРЬ НА {year} ГОД[/b][/size]\n\n"
 
     for name, date_val in events_list:
         result_text += f"{name}\n  [color=ffffff]{format_date(date_val)}[/color]\n\n"
 
     result_text += f"\n[size={int(sp(24))}][b]РОДИТЕЛЬСКИЕ СУББОТЫ[/b][/size]\n\n"
-    result_text += f"[color=b197fc]• [ref={base_url}]Вселенская мясопустная:[/ref][/color]\n  {format_date(subbota_meat)}\n\n"
-    result_text += f"[color=b197fc]• [ref={base_url}]2-я седмица поста:[/ref][/color]\n  {format_date(subbota_2)}\n\n"
-    result_text += f"[color=b197fc]• [ref={base_url}]3-я седмица поста:[/ref][/color]\n  {format_date(subbota_3)}\n\n"
-    result_text += f"[color=b197fc]• [ref={base_url}]4-я седмица поста:[/ref][/color]\n  {format_date(subbota_4)}\n\n"
-    result_text += f"[color=b197fc]• [ref={base_url}]Радоница:[/ref][/color]\n  {format_date(radonica)}\n\n"
-    result_text += f"[color=b197fc]• [ref={base_url}]Троицкая вселенская:[/ref][/color]\n  {format_date(subbota_troica)}\n\n"
+    result_text += f"[color=b197fc]• Вселенская мясопустная:[/color]\n  {format_date(subbota_meat)}\n\n"
+    result_text += f"[color=b197fc]• 2-я седмица поста:[/color]\n  {format_date(subbota_2)}\n\n"
+    result_text += f"[color=b197fc]• 3-я седмица поста:[/color]\n  {format_date(subbota_3)}\n\n"
+    result_text += f"[color=b197fc]• 4-я седмица поста:[/color]\n  {format_date(subbota_4)}\n\n"
+    result_text += f"[color=b197fc]• Радоница:[/color]\n  {format_date(radonica)}\n\n"
+    result_text += f"[color=b197fc]• Троицкая вселенская:[/color]\n  {format_date(subbota_troica)}\n\n"
 
     return result_text
 
@@ -192,6 +186,7 @@ def get_full_orthodox_calendar(year):
 class OrthodoxCalendarApp(App):
     def build(self):
         self.title = "Православный Календарь"
+        self.current_year = datetime.now().year
 
         root_scroll = ScrollView(size_hint=(1, 1), do_scroll_x=False)
 
@@ -213,17 +208,16 @@ class OrthodoxCalendarApp(App):
         )
         btn_minus.bind(on_press=self.decrement_year)
 
-        self.year_input = TextInput(
-            text=str(datetime.now().year),
-            multiline=False,
-            input_filter='int',
+        # Заменено на Label для исключения экранной клавиатуры
+        self.year_label = Label(
+            text=str(self.current_year),
             font_size=sp(26),
             halign='center',
+            valign='middle',
             size_hint_x=0.4,
-            padding=[0, dp(15), 0, 0]
+            color=(1, 1, 1, 1)
         )
-        # Автоматический перерасчет при ручном вводе года и нажатии клавиши Enter
-        self.year_input.bind(on_text_validate=lambda instance: self.calculate_calendar())
+        self.year_label.bind(size=self.year_label.setter('text_size'))
 
         btn_plus = Button(
             text="+1 год >",
@@ -235,7 +229,7 @@ class OrthodoxCalendarApp(App):
         btn_plus.bind(on_press=self.increment_year)
 
         input_layout.add_widget(btn_minus)
-        input_layout.add_widget(self.year_input)
+        input_layout.add_widget(self.year_label)
         input_layout.add_widget(btn_plus)
         self.container.add_widget(input_layout)
 
@@ -252,53 +246,31 @@ class OrthodoxCalendarApp(App):
         self.result_label.bind(
             width=lambda instance, value: setattr(instance, 'text_size', (value, None))
         )
-        self.result_label.bind(on_ref_press=self.open_holiday_link)
 
         self.container.add_widget(self.result_label)
         root_scroll.add_widget(self.container)
-        
-        # Вызываем автоматический расчет сразу при сборке интерфейса
-        self.calculate_calendar()
+
+        self.update_calendar_view()
 
         return root_scroll
 
-    def open_holiday_link(self, instance, value):
-        try:
-            webbrowser.open(value)
-        except Exception:
-            pass
-
     def decrement_year(self, instance):
-        try:
-            current_year = int(self.year_input.text)
-            if current_year > 1:
-                self.year_input.text = str(current_year - 1)
-                self.calculate_calendar(None)
-        except ValueError:
-            pass
+        if self.current_year > 1:
+            self.current_year -= 1
+            self.year_label.text = str(self.current_year)
+            self.update_calendar_view()
 
     def increment_year(self, instance):
+        if self.current_year < 9999:
+            self.current_year += 1
+            self.year_label.text = str(self.current_year)
+        self.update_calendar_view()
+    def update_calendar_view(self):
         try:
-            current_year = int(self.year_input.text)
-            if current_year < 9999:
-                self.year_input.text = str(current_year + 1)
-                self.calculate_calendar(None)
-        except ValueError:
-            pass
-
-    def calculate_calendar(self):
-        try:
-            year = int(self.year_input.text)
-            if 1 <= year <= 9999:
-                calendar_data = get_full_orthodox_calendar(year)
-                self.result_label.text = calendar_data
-            else:
-                err_msg = "[color=ff6b6b]Ошибка: введите год от 1 до 9999.[/color]"
-                self.result_label.text = err_msg
+            calendar_data = get_full_orthodox_calendar(self.current_year)
+            self.result_label.text = calendar_data
         except Exception as e:
-            err_text = f"[color=ff6b6b]Произошла ошибка при расчете:\n{str(e)}[/color]"
-            self.result_label.text = err_text
-
-
-if __name__ == '__main__':
-    OrthodoxCalendarApp().run()
+            self.result_label.text = f"[color=ff6b6b]Ошибка расчета:\n{str(e)}[/color]"
+            
+if name == 'main':
+OrthodoxCalendarApp().run()

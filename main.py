@@ -171,47 +171,19 @@ def get_full_orthodox_calendar(year):
          fixed_dates["Рождественский пост"])
     ]
 
-    result_text = f"[size={int(sp(26))}][b]КАЛЕНДАРЬ НА {year} ГОД[/b][/size]
-"
+    result_text = f"[size={int(sp(26))}][b]КАЛЕНДАРЬ НА {year} ГОД[/b][/size]"
     msg = "(нажмите на название для описания)"
-    result_text += f"[size={int(sp(14))}][color=aaaaaa]{msg}[/color][/size]
-
-"
+    result_text += f"[size={int(sp(14))}][color=aaaaaa]{msg}[/color][/size]"
 
     for name, date_val in events_list:
-        result_text += f"{name}
-  [color=ffffff]{format_date(date_val)}[/color]
-
-"
-
-    result_text += f"
-[size={int(sp(24))}][b]РОДИТЕЛЬСКИЕ СУББОТЫ[/b][/size]
-
-"
-    result_text += f"[color=b197fc]• [ref={base_url}]Вселенская мясопустная:[/ref][/color]
-  {format_date(subbota_meat)}
-
-"
-    result_text += f"[color=b197fc]• [ref={base_url}]2-я седмица поста:[/ref][/color]
-  {format_date(subbota_2)}
-
-"
-    result_text += f"[color=b197fc]• [ref={base_url}]3-я седмица поста:[/ref][/color]
-  {format_date(subbota_3)}
-
-"
-    result_text += f"[color=b197fc]• [ref={base_url}]4-я седмица поста:[/ref][/color]
-  {format_date(subbota_4)}
-
-"
-    result_text += f"[color=b197fc]• [ref={base_url}]Радоница:[/ref][/color]
-  {format_date(radonica)}
-
-"
-    result_text += f"[color=b197fc]• [ref={base_url}]Троицкая вселенская:[/ref][/color]
-  {format_date(subbota_troica)}
-
-"
+        result_text += f"{name}[color=ffffff]{format_date(date_val)}[/color]"
+        result_text += f"[size={int(sp(24))}][b]РОДИТЕЛЬСКИЕ СУББОТЫ[/b][/size]"
+        result_text += f"[color=b197fc]• [ref={base_url}]Вселенская мясопустная:[/ref][/color]{format_date(subbota_meat)}"
+        result_text += f"[color=b197fc]• [ref={base_url}]2-я седмица поста:[/ref][/color]{format_date(subbota_2)}"
+        result_text += f"[color=b197fc]• [ref={base_url}]3-я седмица поста:[/ref][/color]{format_date(subbota_3)}"
+        result_text += f"[color=b197fc]• [ref={base_url}]4-я седмица поста:[/ref][/color]{format_date(subbota_4)}"
+        result_text += f"[color=b197fc]• [ref={base_url}]Радоница:[/ref][/color]{format_date(radonica)}"
+        result_text += f"[color=b197fc]• [ref={base_url}]Троицкая вселенская:[/ref][/color]{format_date(subbota_troica)}"
 
     return result_text
 

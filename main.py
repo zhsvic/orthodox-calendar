@@ -3,12 +3,16 @@ from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.button import Button
 from kivy.uix.label import Label
-from kivy.uix.textinput import TextInput
 from kivy.uix.scrollview import ScrollView
 from kivy.metrics import dp, sp
+from kivy.clock import Clock  # ДОБАВЛЕНО для стабильного автоскролла на Android
+from kivy.core.window import Window  # ДОБАВЛЕНО для управления фоном
 
 
 def get_full_orthodox_calendar(year):
+    if year < 1:
+        year = 1
+
     # 1. МАТЕМАТИЧЕСКИЙ РАСЧЕТ ПАСХИ (Алгоритм Гаусса)
     a = year % 19
     b = year % 4
@@ -150,9 +154,9 @@ def get_full_orthodox_calendar(year):
         ("[color=51cf66]• УСПЕНСКИЙ ПОСТ[/color]",
          fixed_dates["Успенский post (начало)" if "Успенский post (начало)" in fixed_dates else "Успенский пост (начало)"]),
         ("[color=ff6b6b]• Преображение Господне[/color]",
-         fixed_dates["Преображение Господне"]),
-        ("[color=ff6b6b]• Уснение Пресвятой Богородицы[/color]",
-         fixed_dates["Уснение Пресвятой Богородицы"]),
+         fixed_dates["Preображение Господне" if "Preображение Господне" in fixed_dates else "Преображение Господне"]),
+        ("[color=ff6b6b]• Успение Пресвятой Богородицы[/color]",
+         fixed_dates["Успение Пресвятой Богородицы"]),
         ("[color=ff6b6b]• Усекновение главы Иоанна Предтечи[/color]",
          fixed_dates["Усекновение главы Иоанна Предтечи"]),
         ("[color=ff6b6b]• Рождество Богородицы[/color]",
@@ -187,7 +191,17 @@ def get_full_orthodox_calendar(year):
 class OrthodoxCalendarApp(App):
     def build(self):
         self.title = "Православный Календарь"
-        self.current_year = datetime.now().year
+        
+        # Задаем глубокий темно-бордовый цвет фона для всего приложения Kivy
+        Window.clearcolor = (0.18, 0.03, 0.06, 1)
+
+        now_year = datetime.now().year
+        year_str = f"{now_year:04d}"
+
+        self.digits = [int(year_str[0]), int(year_str[1]), int(year_str[2]), int(year_str[3])]
+        self.scroll_views = []
+        self.all_buttons = {0: {}, 1: {}, 2: {}, 3: {}}
+        self.digit_height = dp(50)
 
         root_scroll = ScrollView(size_hint=(1, 1), do_scroll_x=False)
 
@@ -196,44 +210,36 @@ class OrthodoxCalendarApp(App):
         )
         self.container.bind(minimum_height=self.container.setter('height'))
 
-        input_layout = BoxLayout(
-            orientation='horizontal', size_hint_y=None, height=dp(70), spacing=dp(10)
+        # Панель с 4 барабанами
+        picker_layout = BoxLayout(
+            orientation='horizontal', size_hint_y=None, height=dp(160), spacing=dp(10)
         )
 
-        btn_minus = Button(
-            text="< -1 год",
-            font_size=sp(18),
-            size_hint_x=0.3,
-            background_color=(0.2, 0.25, 0.3, 1),
-            background_normal=''
-        )
-        btn_minus.bind(on_press=self.decrement_year)
+        for i in range(4):
+            drum_scroll = ScrollView(size_hint=(0.25, 1), do_scroll_x=False, bar_width=0)
+            drum_layout = BoxLayout(orientation='vertical', size_hint_y=None, spacing=dp(2))
+            drum_layout.bind(minimum_height=drum_layout.setter('height'))
 
-        self.year_input = TextInput(
-            text=str(self.current_year),
-            multiline=False,
-            input_filter='int',
-            font_size=sp(26),
-            halign='center',
-            size_hint_x=0.4,
-            padding=[0, dp(15), 0, 0]
-        )
-        self.year_input.bind(text=self.on_year_text_change)
-        self.year_input.bind(on_text_validate=lambda instance: self.update_calendar_view())
+            for num in range(10):
+                btn = Button(
+                    text=str(num),
+                    font_size=sp(22),
+                    size_hint_y=None,
+                    height=self.digit_height,
+                    background_normal='',
+                    background_color=(0.1, 0.02, 0.04, 1),  # Гармоничный темно-бордовый оттенок
+                    color=(0.8, 0.8, 0.8, 1)
+                )
+                btn.bind(on_press=lambda instance, b_idx=i, n_val=num: self.on_digit_click(b_idx, n_val))
 
-        btn_plus = Button(
-            text="+1 год >",
-            font_size=sp(18),
-            size_hint_x=0.3,
-            background_color=(0.2, 0.25, 0.3, 1),
-            background_normal=''
-        )
-        btn_plus.bind(on_press=self.increment_year)
+                drum_layout.add_widget(btn)
+                self.all_buttons[i][num] = btn
 
-        input_layout.add_widget(btn_minus)
-        input_layout.add_widget(self.year_input)
-        input_layout.add_widget(btn_plus)
-        self.container.add_widget(input_layout)
+            drum_scroll.add_widget(drum_layout)
+            self.scroll_views.append(drum_scroll)
+            picker_layout.add_widget(drum_scroll)
+
+        self.container.add_widget(picker_layout)
 
         self.result_label = Label(
             text="",
@@ -246,47 +252,54 @@ class OrthodoxCalendarApp(App):
         )
         self.result_label.bind(texture_size=self.result_label.setter('size'))
         self.result_label.bind(
-            width=lambda instance, value: setattr(instance, 'text_size', (value, None))
+            width=lambda instance, value: setattr(
+                instance, 'text_size', (value, None)
+            )
         )
-
         self.container.add_widget(self.result_label)
         root_scroll.add_widget(self.container)
+
+        # Стабильное центрирование барабанов через Clock
+        Clock.schedule_once(self.init_scrolls_delayed, 0.1)
         self.update_calendar_view()
 
         return root_scroll
 
-    def on_year_text_change(self, instance, value):
-        try:
-            if value:
-                year = int(value)
-                if 1 <= year <= 9999:
-                    self.current_year = year
-                    calendar_data = get_full_orthodox_calendar(self.current_year)
-                    self.result_label.text = calendar_data
+    def init_scrolls_delayed(self, dt):
+        for idx, digit in enumerate(self.digits):
+            val_scroll = 1.0 - (digit / 9.0) if digit > 0 else 1.0
+            self.scroll_views[idx].scroll_y = val_scroll
+        self.refresh_buttons_highlight()
+        self.update_calendar_view()
+
+    def on_digit_click(self, drum_idx, num_value):
+        if self.digits[drum_idx] != num_value:
+            self.digits[drum_idx] = num_value
+            self.refresh_buttons_highlight()
+            self.update_calendar_view()
+
+    def refresh_buttons_highlight(self):
+        for i in range(4):
+            active_num = self.digits[i]
+            for num in range(10):
+                if num == active_num:
+                    self.all_buttons[i][num].background_color = (0.24, 0.52, 0.78, 1)
+                    self.all_buttons[i][num].color = (1, 0.84, 0, 1)
                 else:
-                    self.result_label.text = "[color=ff6b6b]Введите год от 1 до 9999.[/color]"
-        except ValueError:
-            pass
-
-    def decrement_year(self, instance):
-        if self.current_year > 1:
-            self.current_year -= 1
-            self.year_input.unbind(text=self.on_year_text_change)
-            self.year_input.text = str(self.current_year)
-            self.year_input.bind(text=self.on_year_text_change)
-            self.update_calendar_view()
-
-    def increment_year(self, instance):
-        if self.current_year < 9999:
-            self.current_year += 1
-            self.year_input.unbind(text=self.on_year_text_change)
-            self.year_input.text = str(self.current_year)
-            self.year_input.bind(text=self.on_year_text_change)
-            self.update_calendar_view()
+                    self.all_buttons[i][num].background_color = (0.1, 0.02, 0.04, 1)
+                    self.all_buttons[i][num].color = (1, 1, 1, 1)
 
     def update_calendar_view(self):
         try:
-            calendar_data = get_full_orthodox_calendar(self.current_year)
+            calculated_year = (
+                self.digits[0] * 1000 +
+                self.digits[1] * 100 +
+                self.digits[2] * 10 +
+                self.digits[3]
+            )
+            if calculated_year < 1:
+                calculated_year = 1
+            calendar_data = get_full_orthodox_calendar(calculated_year)
             self.result_label.text = calendar_data
         except Exception as e:
             self.result_label.text = f"[color=ff6b6b]Ошибка расчета:\n{str(e)}[/color]"

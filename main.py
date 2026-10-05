@@ -272,5 +272,5 @@ class OrthodoxCalendarApp(App):
         except Exception as e:
             self.result_label.text = f"[color=ff6b6b]Ошибка расчета:\n{str(e)}[/color]"
             
-if name == 'main':
-OrthodoxCalendarApp().run()
+if __name__ == '__main__':
+    OrthodoxCalendarApp().run()

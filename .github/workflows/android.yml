@@ -56,20 +56,38 @@ jobs:
         pip install "pip<24.1"
         pip install cython==0.29.33 buildozer
 
-    # ВРЕМЕННЫЙ ШАГ: Генерируем ключ и выводим его в логи
-    - name: Generate and Show Keystore Base64
+    # 1. Восстанавливаем оригинальный постоянный ключ из созданных секретов
+    - name: Decode Keystore
       run: |
-        keytool -genkey -v \
-          -keystore release.keystore \
-          -alias orthodox_alias \
-          -keyalg RSA \
-          -keysize 2048 \
-          -validity 10000 \
-          -storepass "OrthodoxPass123" \
-          -keypass "OrthodoxPass123" \
-          -dname "CN=OrthodoxCalendar, OU=App, O=Orthodox, L=Moscow, S=Moscow, C=RU"
-          
-        echo "=== СКОПИРУЙТЕ ТЕКСТ НИЖЕ ==="
-        base64 -w 0 release.keystore
-        echo ""
-        echo "=== КОНЕЦ ТЕКСТА ==="
+        echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > release.keystore
+
+    # 2. Собираем подписанный релиз
+    - name: Build Release with Buildozer
+      env:
+        APP_ANDROID_KEYSTORE: release.keystore
+        APP_ANDROID_KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+        APP_ANDROID_KEYALIAS: orthodox_alias
+        APP_ANDROID_KEYALIAS_PASSWORD: ${{ secrets.KEYALIAS_PASSWORD }}
+      run: |
+        mkdir -p ~/.buildozer
+        buildozer android release
+
+    # 3. Загружаем скомпилированные пакеты (AAB для Google Play) в Артефакты
+    - name: Upload AAB Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: Orthodox-Calendar-GooglePlay-AAB
+        path: |
+          bin/*.aab
+          .buildozer/android/platform/build-*/dists/*/build/outputs/bundle/release/*.aab
+        retention-days: 14
+
+    # 4. Загружаем скомпилированные пакеты (APK для RuStore) в Артефакты
+    - name: Upload APK Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: Orthodox-Calendar-RuStore-APK
+        path: |
+          bin/*.apk
+          .buildozer/android/platform/build-*/dists/*/build/outputs/apk/release/*.apk
+        retention-days: 14

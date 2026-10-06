@@ -74,25 +74,48 @@ jobs:
         # Сборка AAB для Google Play
         buildozer android release
         
-        # Принудительная сборка APK для RuStore (перезаписываем формат из spec)
+        # Принудительная сборка APK для RuStore
         APP_ANDROID_RELEASE_ARTIFACT=apk buildozer android release
 
-    # 3. Загружаем скомпилированные пакеты (AAB для Google Play) в Артефакты
+    # 3. Фикс выравнивания (Zipalign) и переименование файлов
+    - name: Optimize and Align APK / AAB
+      run: |
+        # Находим инструменты Android SDK внутри папки Buildozer
+        ANDROID_BUILD_TOOLS_DIR=$(find ~/.buildozer/android/platform/android-sdk/build-tools/ -maxdepth 1 -mindepth 1 -type d | sort -V | tail -n 1)
+        echo "Используем Build Tools из: $ANDROID_BUILD_TOOLS_DIR"
+        
+        # Создаем чистую папку для красивых готовых файлов
+        mkdir -p ready_bin
+        
+        # Переносим и переименовываем AAB
+        cp bin/*.aab ready_bin/orthodox_calendar_googleplay.aab || true
+        
+        # Выравниваем APK с помощью zipalign, меняя имя на нормальное
+        RAW_APK=$(find bin/ -name "*.apk" | head -n 1)
+        if [ -n "$RAW_APK" ]; then
+          $ANDROID_BUILD_TOOLS_DIR/zipalign -v 4 "$RAW_APK" ready_bin/orthodox_calendar_rustore.apk
+          
+          # На всякий случай принудительно переподписываем выровненный APK утилитой apksigner
+          $ANDROID_BUILD_TOOLS_DIR/apksigner sign --ks release.keystore \
+            --ks-pass pass:"${{ secrets.KEYSTORE_PASSWORD }}" \
+            --key-pass pass:"${{ secrets.KEYALIAS_PASSWORD }}" \
+            ready_bin/orthodox_calendar_rustore.apk
+            
+          echo "Оптимизация APK завершена!"
+        fi
+
+    # 4. Загружаем скомпилированные пакеты (AAB для Google Play) в Артефакты
     - name: Upload AAB Artifact
       uses: actions/upload-artifact@v4
       with:
         name: Orthodox-Calendar-GooglePlay-AAB
-        path: |
-          bin/*.aab
-          .buildozer/android/platform/build-*/dists/*/build/outputs/bundle/release/*.aab
+        path: ready_bin/*.aab
         retention-days: 14
 
-    # 4. Загружаем скомпилированные пакеты (APK для RuStore) в Артефакты
+    # 5. Загружаем скомпилированные пакеты (APK для RuStore) в Артефакты
     - name: Upload APK Artifact
       uses: actions/upload-artifact@v4
       with:
         name: Orthodox-Calendar-RuStore-APK
-        path: |
-          bin/*.apk
-          .buildozer/android/platform/build-*/dists/*/build/outputs/apk/release/*.apk
+        path: ready_bin/*.apk
         retention-days: 14

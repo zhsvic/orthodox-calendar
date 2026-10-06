@@ -56,8 +56,8 @@ jobs:
         pip install "pip<24.1"
         pip install cython==0.29.33 buildozer
 
-# Шаг 1: Создаем чистый release.keystore прямо в корне проекта
-    - name: Generate Production Keystore
+    # ВРЕМЕННЫЙ ШАГ: Генерируем ключ и выводим его в логи
+    - name: Generate and Show Keystore Base64
       run: |
         keytool -genkey -v \
           -keystore release.keystore \
@@ -68,14 +68,8 @@ jobs:
           -storepass "OrthodoxPass123" \
           -keypass "OrthodoxPass123" \
           -dname "CN=OrthodoxCalendar, OU=App, O=Orthodox, L=Moscow, S=Moscow, C=RU"
-
-    # Шаг 2: Запускаем финальную сборку релиза AAB и APK с правильными переменными
-    - name: Build Release with Buildozer
-      env:
-        APP_ANDROID_KEYSTORE: release.keystore
-        APP_ANDROID_KEYSTORE_PASSWORD: OrthodoxPass123
-        APP_ANDROID_KEYALIAS: orthodox_alias
-        APP_ANDROID_KEYALIAS_PASSWORD: OrthodoxPass123
-      run: |
-        mkdir -p ~/.buildozer
-        buildozer android release
+          
+        echo "=== СКОПИРУЙТЕ ТЕКСТ НИЖЕ ==="
+        base64 -w 0 release.keystore
+        echo ""
+        echo "=== КОНЕЦ ТЕКСТА ==="

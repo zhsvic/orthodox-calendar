@@ -61,19 +61,22 @@ jobs:
       run: |
         echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > release.keystore
 
-    # 2. Запускаем шифрование ключа (используя локальный pepk.jar и секреты для паролей)
+    # 2. Создаем файл ключа шифрования и запускаем PEPK
     - name: Run PEPK Encryption
       run: |
+        # 2a. Сохраняем текстовый ключ в бинарный файл public_key.der
+        echo "eb10fe8f7c7c9df715022017b00c6471f8ba8170b13049a11e6c09ffe3056a104a3bbe4ac5a955f4ba4fe93fc8cef27558a3eb9d2a529a2092761fb833b656cd48b9de6a" | xxd -r -p > public_key.der
+
+        # 2b. Запускаем утилиту PEPK с указанием пути к созданному файлу
         java -jar pepk.jar \
           --keystore=release.keystore \
           --alias=orthodox_alias \
-          --storepass="${{ secrets.KEYSTORE_PASSWORD }}" \
-          --keypass="${{ secrets.KEYALIAS_PASSWORD }}" \
+          --password="${{ secrets.KEYSTORE_PASSWORD }}" \
+          --key-password="${{ secrets.KEYALIAS_PASSWORD }}" \
           --output=pepk_out.zip \
-          --encryptionkey=eb10fe8f7c7c9df715022017b00c6471f8ba8170b13049a11e6c09ffe3056a104a3bbe4ac5a955f4ba4fe93fc8cef27558a3eb9d2a529a2092761fb833b656cd48b9de6a \
+          --encryptionkey-path=public_key.der \
           --rsa-aes-encryption \
           --include-cert
-      # ВНИМАНИЕ: Если длинный код после --encryptionkey в консоли RuStore изменился, замените строку выше на актуальную!
 
     # 3. Выгружаем готовый zip-архив в Артефакты
     - name: Upload PEPK Secret Artifact

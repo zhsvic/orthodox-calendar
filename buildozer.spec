@@ -57,6 +57,8 @@ android.accept_sdk_license = True
 # (str) Формат сборки (debug для тестирования)
 android.release_artifact = aab
 
+android.gradle_options = android.bundle.enableUncompressedNativeLibs=false
+
 # Переменные для автоматической подписи релиза из GitHub Actions
 android.keystore = %(APP_ANDROID_KEYSTORE)s
 android.keystore_password = %(APP_ANDROID_KEYSTORE_PASSWORD)s

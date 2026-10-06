@@ -57,6 +57,12 @@ android.accept_sdk_license = True
 # (str) Формат сборки (debug для тестирования)
 android.release_artifact = aab
 
+# Переменные для автоматической подписи релиза из GitHub Actions
+android.keystore = %(APP_ANDROID_KEYSTORE)s
+android.keystore_password = %(APP_ANDROID_KEYSTORE_PASSWORD)s
+android.keyalias = %(APP_ANDROID_KEYALIAS)s
+android.keyalias_password = %(APP_ANDROID_KEYALIAS_PASSWORD)s
+
 # ==========================================
 # Настройки логов и архитектуры
 # ==========================================

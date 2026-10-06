@@ -56,66 +56,33 @@ jobs:
         pip install "pip<24.1"
         pip install cython==0.29.33 buildozer
 
-    # 1. Восстанавливаем оригинальный постоянный ключ из созданных секретов
+    # 1. Восстанавливаем оригинальный постоянный ключ из секретов
     - name: Decode Keystore
       run: |
         echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > release.keystore
 
-    # 2. Собираем подписанные релизы (сначала AAB, затем APK)
-    - name: Build Release with Buildozer
-      env:
-        APP_ANDROID_KEYSTORE: release.keystore
-        APP_ANDROID_KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
-        APP_ANDROID_KEYALIAS: orthodox_alias
-        APP_ANDROID_KEYALIAS_PASSWORD: ${{ secrets.KEYALIAS_PASSWORD }}
+    # 2. Скачиваем утилиту PEPK от Google/RuStore
+    - name: Download PEPK tool
       run: |
-        mkdir -p ~/.buildozer
-        
-        # Сборка AAB для Google Play
-        buildozer android release
-        
-        # Принудительная сборка APK для RuStore
-        APP_ANDROID_RELEASE_ARTIFACT=apk buildozer android release
+        wget https://googleapis.com -O pepk.jar || wget https://github.com -O pepk.jar 
+        # Примечание: Если официальная прямая ссылка недоступна, RuStore дает скачать её по кнопке "Скачать" на вашем втором скриншоте.
 
-    # 3. Фикс выравнивания (Zipalign) и переименование файлов
-    - name: Optimize and Align APK / AAB
+    # 3. Запускаем шифрование ключа
+    - name: Run PEPK Encryption
       run: |
-        # Находим инструменты Android SDK внутри папки Buildozer
-        ANDROID_BUILD_TOOLS_DIR=$(find ~/.buildozer/android/platform/android-sdk/build-tools/ -maxdepth 1 -mindepth 1 -type d | sort -V | tail -n 1)
-        echo "Используем Build Tools из: $ANDROID_BUILD_TOOLS_DIR"
-        
-        # Создаем чистую папку для красивых готовых файлов
-        mkdir -p ready_bin
-        
-        # Переносим и переименовываем AAB
-        cp bin/*.aab ready_bin/orthodox_calendar_googleplay.aab || true
-        
-        # Выравниваем APK с помощью zipalign, меняя имя на нормальное
-        RAW_APK=$(find bin/ -name "*.apk" | head -n 1)
-        if [ -n "$RAW_APK" ]; then
-          $ANDROID_BUILD_TOOLS_DIR/zipalign -v 4 "$RAW_APK" ready_bin/orthodox_calendar_rustore.apk
-          
-          # На всякий случай принудительно переподписываем выровненный APK утилитой apksigner
-          $ANDROID_BUILD_TOOLS_DIR/apksigner sign --ks release.keystore \
-            --ks-pass pass:"${{ secrets.KEYSTORE_PASSWORD }}" \
-            --key-pass pass:"${{ secrets.KEYALIAS_PASSWORD }}" \
-            ready_bin/orthodox_calendar_rustore.apk
-            
-          echo "Оптимизация APK завершена!"
-        fi
+        java -jar pepk.jar \
+          --keystore=release.keystore \
+          --alias=orthodox_alias \
+          --output=pepk_out.zip \
+          --encryptionkey=eb10fe8f7c7c9df715022017b00c6471f8ba8170b13049a11e6c09ffe3056a104a3bbe4ac5a955f4ba4fe93fc8cef27558a3eb9d2a529a2092761fb833b656cd48b9de6a \
+          --rsa-aes-encryption \
+          --include-cert
+      # ВНИМАНИЕ: Длинный код после --encryptionkey скопируйте ТОЧНО из консоли RuStore (из поля команды на втором скриншоте, прокрутив его вправо)
 
-    # 4. Загружаем скомпилированные пакеты (AAB для Google Play) в Артефакты
-    - name: Upload AAB Artifact
+    # 4. Выгружаем готовый zip-архив в Артефакты
+    - name: Upload PEPK Secret Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: Orthodox-Calendar-GooglePlay-AAB
-        path: ready_bin/*.aab
-        retention-days: 14
-
-    # 5. Загружаем скомпилированные пакеты (APK для RuStore) в Артефакты
-    - name: Upload APK Artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: Orthodox-Calendar-RuStore-APK
-        path: ready_bin/*.apk
-        retention-days: 14
+        name: RuStore-PEPK-Key
+        path: pepk_out.zip
+        retention-days: 5

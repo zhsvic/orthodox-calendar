@@ -1,85 +1,23 @@
-name: Build Release for Google Play and RuStore
-
-on:
-  push:
-    branches: [ main ]
-  workflow_dispatch:
-
-jobs:
-  build:
-    runs-on: ubuntu-22.04
-
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v5
-
-    - name: Set up Python
-      uses: actions/setup-python@v6
-      with:
-        python-version: '3.11.9'
-
-    - name: Set up JDK 17
-      uses: actions/setup-java@v5
-      with:
-        distribution: 'temurin'
-        java-version: '17'
-
-    - name: Cache Buildozer global directory
-      uses: actions/cache@v5
-      with:
-        path: ~/.buildozer
-        key: ${{ runner.os }}-buildozer-${{ hashFiles('buildozer.spec') }}
-        restore-keys: |
-          ${{ runner.os }}-buildozer-
-
-    - name: Install system dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y \
-          build-essential \
-          ccache \
-          git \
-          libffi-dev \
-          libssl-dev \
-          libgmp3-dev \
-          zlib1g-dev \
-          unzip \
-          zip \
-          tar \
-          autoconf \
-          automake \
-          libtool \
-          pkg-config \
-          cmake \
-          patch
-        python -m pip install --upgrade pip
-        pip install "pip<24.1"
-        pip install cython==0.29.33 buildozer
-
-    # 1. Восстанавливаем оригинальный постоянный ключ из секретов
+# 1. Восстанавливаем оригинальный постоянный ключ из секретов
     - name: Decode Keystore
       run: |
         echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > release.keystore
 
-    # 2. Скачиваем утилиту PEPK от Google/RuStore
-    - name: Download PEPK tool
-      run: |
-        wget https://googleapis.com -O pepk.jar || wget https://github.com -O pepk.jar 
-        # Примечание: Если официальная прямая ссылка недоступна, RuStore дает скачать её по кнопке "Скачать" на вашем втором скриншоте.
-
-    # 3. Запускаем шифрование ключа
+    # 2. Запускаем шифрование ключа (используя локальный pepk.jar и секреты для паролей)
     - name: Run PEPK Encryption
       run: |
         java -jar pepk.jar \
           --keystore=release.keystore \
           --alias=orthodox_alias \
+          --storepass="${{ secrets.KEYSTORE_PASSWORD }}" \
+          --keypass="${{ secrets.KEYALIAS_PASSWORD }}" \
           --output=pepk_out.zip \
           --encryptionkey=eb10fe8f7c7c9df715022017b00c6471f8ba8170b13049a11e6c09ffe3056a104a3bbe4ac5a955f4ba4fe93fc8cef27558a3eb9d2a529a2092761fb833b656cd48b9de6a \
           --rsa-aes-encryption \
           --include-cert
-      # ВНИМАНИЕ: Длинный код после --encryptionkey скопируйте ТОЧНО из консоли RuStore (из поля команды на втором скриншоте, прокрутив его вправо)
+      # ВНИМАНИЕ: Если длинный код после --encryptionkey в консоли RuStore изменился, замените строку выше на актуальную!
 
-    # 4. Выгружаем готовый zip-архив в Артефакты
+    # 3. Выгружаем готовый zip-архив в Артефакты
     - name: Upload PEPK Secret Artifact
       uses: actions/upload-artifact@v4
       with:

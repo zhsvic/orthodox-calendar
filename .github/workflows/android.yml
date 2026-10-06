@@ -61,7 +61,7 @@ jobs:
       run: |
         echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > release.keystore
 
-    # 2. Собираем подписанный релиз
+    # 2. Собираем подписанные релизы (сначала AAB, затем APK)
     - name: Build Release with Buildozer
       env:
         APP_ANDROID_KEYSTORE: release.keystore
@@ -70,7 +70,12 @@ jobs:
         APP_ANDROID_KEYALIAS_PASSWORD: ${{ secrets.KEYALIAS_PASSWORD }}
       run: |
         mkdir -p ~/.buildozer
+        
+        # Сборка AAB для Google Play
         buildozer android release
+        
+        # Принудительная сборка APK для RuStore (перезаписываем формат из spec)
+        APP_ANDROID_RELEASE_ARTIFACT=apk buildozer android release
 
     # 3. Загружаем скомпилированные пакеты (AAB для Google Play) в Артефакты
     - name: Upload AAB Artifact

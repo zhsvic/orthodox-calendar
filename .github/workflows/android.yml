@@ -1,3 +1,61 @@
+name: Build Release for Google Play and RuStore
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v5
+
+    - name: Set up Python
+      uses: actions/setup-python@v6
+      with:
+        python-version: '3.11.9'
+
+    - name: Set up JDK 17
+      uses: actions/setup-java@v5
+      with:
+        distribution: 'temurin'
+        java-version: '17'
+
+    - name: Cache Buildozer global directory
+      uses: actions/cache@v5
+      with:
+        path: ~/.buildozer
+        key: ${{ runner.os }}-buildozer-${{ hashFiles('buildozer.spec') }}
+        restore-keys: |
+          ${{ runner.os }}-buildozer-
+
+    - name: Install system dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          build-essential \
+          ccache \
+          git \
+          libffi-dev \
+          libssl-dev \
+          libgmp3-dev \
+          zlib1g-dev \
+          unzip \
+          zip \
+          tar \
+          autoconf \
+          automake \
+          libtool \
+          pkg-config \
+          cmake \
+          patch
+        python -m pip install --upgrade pip
+        pip install "pip<24.1"
+        pip install cython==0.29.33 buildozer
+
 # 1. Восстанавливаем оригинальный постоянный ключ из секретов
     - name: Decode Keystore
       run: |
